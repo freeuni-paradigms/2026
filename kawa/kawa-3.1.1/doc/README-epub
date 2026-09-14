@@ -1,0 +1,31 @@
+The file kawa-manual.epub contains the Kawa documentation packaged
+as an e-book in EPUB format.  It should be readable by most standalone
+e-book readers.  There are also plugins available for various browsers.
+
+You can also read the manual with the kawa --browse-manual option:
+
+  $ kawa --browse-manual
+
+Here kawa is one of kawa or kawa.bat in the ../bin directory.
+
+This command starts a mini-web-server, and then creates a window or tab
+to read it using your default browser.
+
+You can specify some other browser - for example:
+
+  $ kawa --browse-manual="firefox %U"
+
+This runs the command quoted, after Kawa replaces %U with a URL
+referencing Kawa's mini-web-server.
+
+An epub is essentially a zip archive, which you can unzip:
+
+    cd $KAWA_HOME/doc
+    unzip kawa-manual.epub
+
+Then you can use a plain browser with the URL
+file:$KAWA_HOME/doc/OEBPS/index.xhtml.
+
+You can generate the web-page-style html files from the source
+with 'cd doc && make web/index.html', but this requires
+various tools including xsltproc and the docbook style sheets.

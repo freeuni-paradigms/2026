@@ -1,0 +1,64 @@
+#!/bin/bash
+thisfile=`command -v $0`
+case "$thisfile" in
+  "") echo "installation error - can't find path to $0"; exit -1 ;;
+  /*) ;;
+  *) thisfile="$PWD/$thisfile"  ;;
+esac
+while test -L "$thisfile"; do thisfile=$(readlink -f "$thisfile"); done
+thisdir=`dirname "$thisfile"`
+kawadir=`echo "$thisdir" | sed -e 's|/bin\(/\.\)*$||'`
+if [ "$#" -eq 0 ]
+then
+   command_line="$0"
+else
+   command_line="$0 $*"
+fi
+test -t 0 || no_console="--no-console"
+
+# If configured with --enable-kawa-frontend then kawa.sh is
+# only used for pre-install testing.  In that case
+# we don't need to set KAWALIB, since kawapath.c looks for it in "..".
+#  LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$thisdir
+#  export LD_LIBRARY_PATH
+#  exec $thisdir/kawa "$@"
+
+KAWALIB=${KAWALIB-"`echo $kawadir/lib/kawa.jar`"}
+# MSYS: KAWALIB=${KAWALIB-"`cd $kawadir/lib/; pwd -W`:kawa.jar`"}
+CLASSPATH="${KAWALIB}:$kawadir/lib/jline.jar:$kawadir/lib/domterm.jar:$kawadir/lib/servlet.jar:${CLASSPATH}"
+export CLASSPATH
+
+if test -n "$JAVA_HOME"; then
+    JAVA="${JAVA_HOME}/bin/java"
+else
+    JAVA=${JAVA-java}
+fi
+
+# JAVAFX_HOME=${JAVAFX_HOME:=yes}
+JVM_FLAGS=${JAVAFX_HOME:+"--module-path=${JAVAFX_HOME}/lib" --add-modules=javafx.web}
+
+# This ugly duplication is so we only have to use arrays and substrings
+# (which are non-Posix and non-portable) if there is a -D or -J option.
+case "$1" in
+    -D* | -J*)
+        i=0
+        for arg in "$@"; do
+            case "$arg" in
+                -D*)
+                    jvm_args[i++]="$arg"
+                    shift
+                ;;
+                -J*)
+                    jvm_args[i++]="${arg:2}"
+                    shift
+                ;;
+                *) break
+                ;;
+            esac
+        done
+        exec ${JAVA} ${JVM_FLAGS} -Dkawa.command.line="${command_line}" -Dkawa.command.pid="$$" -Dkawa.home="${kawadir}" "${jvm_args[@]}" kawa.repl ${no_console} "$@"
+        ;;
+    *)
+        exec ${JAVA} ${JVM_FLAGS} -Dkawa.command.line="${command_line}" -Dkawa.command.pid="$$" -Dkawa.home="${kawadir}" kawa.repl ${no_console} "$@"
+        ;;
+esac
