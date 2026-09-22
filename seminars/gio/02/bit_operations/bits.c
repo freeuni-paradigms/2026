@@ -266,7 +266,9 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  int even = 0x55 | (0x55 << 8); // 0101 ..
+  even  = even | (even << 16);
+  return !~(x | even);
 }
 /* 
  * negate - return -x 
@@ -276,7 +278,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 //3
 /* 
@@ -289,7 +291,11 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  int minus30 = ~0x30 + 1;
+  int check1 = x + minus30;       // x - 0x30, must be >= 0
+  int minusX = ~x + 1;
+  int check2 = 0x39 + minusX;     // 0x39 - x, must be >= 0
+  return !(check1 >> 31) & !(check2 >> 31);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -299,7 +305,8 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  int mask = ~!!x + 1;  // x != 0 -> 1 -> all ones;  x == 0 -> 0 -> all zeros
+  return (mask & y) | (~mask & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -309,7 +316,13 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  // different signs: the answer is "is x negative" (y - x could overflow)
+  // same signs: y - x cannot overflow, so just look at its sign bit
+  int signX = (x >> 31) & 1;
+  int signY = (y >> 31) & 1;
+  int diffSign = signX ^ signY;
+  int signDiff = ((y + ~x + 1) >> 31) & 1;   // sign of y - x
+  return (diffSign & signX) | (!diffSign & !signDiff);
 }
 //4
 /* 
@@ -321,7 +334,9 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  // x != 0 -> x or -x is negative -> sign bit of (x | -x) is 1 -> >> 31 gives -1 -> + 1 = 0
+  // x == 0 -> everything stays 0 -> + 1 = 1
+  return ((x | (~x + 1)) >> 31) + 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -336,7 +351,21 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  // negative x needs as many bits as ~x, then binary-search the highest 1 bit, + 1 for the sign
+  int b16, b8, b4, b2, b1, b0;
+  x = x ^ (x >> 31);       // x >= 0 -> x;  x < 0 -> ~x
+  b16 = !!(x >> 16) << 4;  // any 1 above bit 15? then count 16 and shift them away
+  x = x >> b16;
+  b8 = !!(x >> 8) << 3;
+  x = x >> b8;
+  b4 = !!(x >> 4) << 2;
+  x = x >> b4;
+  b2 = !!(x >> 2) << 1;
+  x = x >> b2;
+  b1 = !!(x >> 1);
+  x = x >> b1;
+  b0 = x;
+  return b16 + b8 + b4 + b2 + b1 + b0 + 1;
 }
 //float
 /* 
@@ -351,7 +380,17 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  unsigned sign = uf & 0x80000000;
+  unsigned exp = (uf >> 23) & 0xFF;
+  unsigned frac = uf & 0x7FFFFF;
+  if (exp == 0xFF)          // NaN or infinity: 2 * inf = inf, NaN stays NaN
+    return uf;
+  if (exp == 0)             // denormalized: shift frac; a carry into exp normalizes it, which is correct
+    return sign | (frac << 1);
+  exp = exp + 1;            // normalized: 2 * (1.frac * 2^E) = 1.frac * 2^(E+1)
+  if (exp == 0xFF)          // overflow -> infinity (frac must be 0)
+    return sign | 0x7F800000;
+  return sign | (exp << 23) | frac;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -366,7 +405,23 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  int sign = uf >> 31;
+  int exp = (uf >> 23) & 0xFF;
+  int frac = uf & 0x7FFFFF;
+  int E = exp - 127;
+  int M;
+  if (E < 0)                // |f| < 1 (includes 0 and denormalized) -> 0
+    return 0;
+  if (E >= 31)              // |f| >= 2^31, infinity, NaN (also exactly right for -2^31)
+    return 0x80000000u;
+  M = frac | 0x800000;      // put the implicit leading 1 back: M = 1.frac * 2^23
+  if (E > 23)               // value = M * 2^(E - 23)
+    M = M << (E - 23);
+  else
+    M = M >> (23 - E);      // dropping the fraction bits = truncation toward 0
+  if (sign)
+    return -M;
+  return M;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -382,5 +437,11 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+  if (x > 127)              // too large -> +infinity
+    return 0x7F800000;
+  if (x >= -126)            // normalized: M = 1.0 so frac = 0, exp = x + 127
+    return (x + 127) << 23;
+  if (x >= -149)            // denormalized: value = frac * 2^-149, so frac = 2^(x + 149)
+    return 1 << (x + 149);
+  return 0;                 // too small -> 0
 }
