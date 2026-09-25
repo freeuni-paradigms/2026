@@ -1,5 +1,5 @@
-GL_LIB_PATH ?= ../../gl
-OUT_DIR ?= $(CURDIR)
+export GL_LIB_PATH ?= $(CURDIR)/../../gl
+export OUT_DIR ?= $(CURDIR)
 
 include $(GL_LIB_PATH)/makefile_base
 

@@ -44,11 +44,12 @@ void TestInit(Test* test, const char* name, TestFn test_fn) {
 }
 
 void RunTest(Test* test, const LUnitOpts* opts) {
-  LOG_INFO("TESTING: %s", test->name);
+  LOG_INFO("----- RUNNING TEST: %s ------", test->name);
   test->success = true;
   test->memory = true;
   ((TestFn)test->test_fn)(test);
   LOG_RESULTS(test, opts);
+  printf("\n");
 }
 
 void TestSuiteInit(TestSuite* suite, const char* name, double weight) {
@@ -108,7 +109,7 @@ void TestSuitesReadResults(int n, TestSuite* suites[], FILE* inp) {
       for (int j = 0; j < suites[i]->tests.size && !found; ++j) {
 	Test* test = ListGet(&suites[i]->tests, j);
 	if (strcmp(test->name, test_name) == 0) {
-	  found = true;	  
+	  found = true;
 	  test->success = succeeded;
 	  test->memory = memory;
 	}
@@ -130,21 +131,25 @@ void ProcessTestSuites(int n, TestSuite* suites[], const LUnitOpts* opts) {
     FILE* inp = fopen(opts->results_file, "r");
     assert(inp != NULL);
     TestSuitesReadResults(n, suites, inp);
-    fclose(inp);    
-    double score = CalculateScore(n, suites);
-    printf("%lf\n", score);
+    fclose(inp);
+    Score score = CalculateScore(n, suites);
+    printf("%lf\n", score.score);
     return;
   }
   for (int i = 0; i < n; ++i) {
     TestSuiteProcess(suites[i], opts);
   }
   if (opts->run_test == NULL) {
-    printf("%lf\n", CalculateScore(n, suites));
+    Score score = CalculateScore(n, suites);
+    printf("%d / %d PASSED\n", score.num_passed, score.num_tests);
   }
 }
 
-double CalculateScore(int n, TestSuite* suites[]) {
-  double score = 0;
+Score CalculateScore(int n, TestSuite* suites[]) {
+  Score score;
+  score.score = 0;
+  score.num_tests = 0;
+  score.num_passed = 0;
   for (int i = 0; i < n; ++i) {
     TestSuite* suite = suites[i];
     if (suite->tests.size == 0) {
@@ -154,13 +159,15 @@ double CalculateScore(int n, TestSuite* suites[]) {
     int num_memory_failed = 0;
     for (int j = 0; j < suite->tests.size; ++j) {
       Test* test = ListGet(&suite->tests, j);
+      ++score.num_tests;
       if (test->success) {
 	++num_succeeded;
+        ++score.num_passed;
 	num_memory_failed += !test->memory;
       }
     }
     double score_per_test = suite->weight / suite->tests.size;
-    score += score_per_test *
+    score.score += score_per_test *
       (num_succeeded - PENALTY_ON_MEMORY_FAILURE * num_memory_failed);
   }
   return score;

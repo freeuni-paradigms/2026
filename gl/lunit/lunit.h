@@ -51,7 +51,14 @@ void TestSuiteAddTest(TestSuite* suite, Test* test);
 void RunTest(Test* test, const LUnitOpts* opts);
 
 void ProcessTestSuites(int n, TestSuite* suites[], const LUnitOpts* opts);
-double CalculateScore(int n, TestSuite* suites[]);
+
+typedef struct {
+  int num_tests;
+  int num_passed;
+  double score;
+} Score;
+
+Score CalculateScore(int n, TestSuite* suites[]);
 
 #define TEST(name) \
   void Test##name(Test* test)
@@ -63,11 +70,11 @@ double CalculateScore(int n, TestSuite* suites[]);
 
 #define LOG_RESULTS(test, opts)						\
   if ((test)->success) {						\
-    LOG_INFO("TEST %s: SUCCESS", (test)->name);				\
+    LOG_INFO("----- TEST %s: SUCCESS -----", (test)->name);				\
   } else if ((opts)->crash_on_failure) {				\
-    LOG_FATAL("TEST %s: FAILURE", (test)->name);			\
+    LOG_FATAL("----- TEST %s: FAILURE -----", (test)->name);			\
   } else {								\
-    LOG_ERROR("TEST %s: FAILURE", (test)->name);			\
+    LOG_ERROR("----- TEST %s: FAILURE -----", (test)->name);			\
   }
 
 #define RUN_TEST(name, opts) {					\
@@ -81,5 +88,5 @@ double CalculateScore(int n, TestSuite* suites[]);
     TestInit(&test, #name, Test##name);			\
     TestSuiteAddTest(&suite, &test);			\
   }
-  
+
 #endif // GL_LUNIT_LUNIT_H_
