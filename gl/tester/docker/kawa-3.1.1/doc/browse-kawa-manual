@@ -1,0 +1,56 @@
+#!/bin/sh
+#|
+# This is a hybrid shell/Scheme script for browsing Kawa's documentation.
+# It reads (and uncompresses) the documentation in ../doc/kawa-manual.epub.
+#
+# It has ONE MAJOR BUG: Clicking an external link replaces the entire
+# window without any way of getting back.  (It should instead create
+# a new window/tab in your default desktop browser.  Fixing this would
+# require more coding than it is worth.)
+#
+thisfile=`type -p $0`
+case "$thisfile" in
+  "") echo "installation error - can't find path to $0"; exit -1 ;;
+  /*) ;;
+  *) thisfile="$PWD/$thisfile"  ;;
+esac         
+while test -L "$thisfile"; do thisfile=$(readlink -f "$thisfile"); done
+KAWA_HOME=`echo $(dirname $thisfile) | sed -e 's|/doc$||'`
+if test -n "$JAVA_HOME"; then
+    JAVA="${JAVA_HOME}/bin/java"
+else
+    JAVA=${JAVA-java}
+fi
+exec ${JAVA-"java"} -jar ${KAWA_HOME}/lib/kawa.jar $thisfile
+|#
+
+(module-extends javafx.application.Application)
+(define (start (stage ::javafx.stage.Stage))::void
+  (stage:setTitle "Kawa documentation")
+  (let* ((browser (javafx.scene.web.WebView))
+         (box (javafx.scene.layout.VBox browser))
+         (web-engine (browser:getEngine))
+         (manual-url (resource-url "../doc/kawa-manual.epub")))
+    (web-engine:load &{jar:&[manual-url]!/OEBPS/index.html})
+    (box:setVgrow browser javafx.scene.layout.Priority:ALWAYS)
+    (stage:setScene (javafx.scene.Scene box))
+    (stage:show)))
+(javafx.application.Application:launch (module-class))
+
+#|
+;; This equivalent code mostly works, but for some reason
+;; window resizing doesn't resize the browser.
+(require 'javafx-defs)
+
+(javafx-application)
+(javafx-scene
+ title: "Kawa documentation"
+ ;; width: 800 height: 700  ;;fill: Color: "#666970"
+ (let* ((browser (javafx.scene.web.WebView))
+        (box (javafx.scene.layout.VBox browser))
+        (web-engine (browser:getEngine))
+        (manual-url (resource-url "../doc/kawa-manual.epub")))
+   (web-engine:load &{jar:&[manual-url]!/OEBPS/index.html})
+   (box:setVgrow browser javafx.scene.layout.Priority:ALWAYS)
+   box))
+|#

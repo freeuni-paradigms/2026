@@ -1,0 +1,41 @@
+#| A -*- scheme -*- web server script for the Kawa documentation.
+ | The documentation is extracted from the kawa-manual.epub ebook.
+ |
+ | Usage:
+ | Start the server with the command:
+ | $ bin/kawa --http-auto-handler / doc/ --http-start 8888
+ | or more generally:
+ | $ kawa --http-auto-handler / DIR/ --http-start PORT
+ | where DIR is the (relative or absolute) directory containing both
+ | this file and the kawa-manual.epub ebook file.
+ | PORT is the port to listen to.
+ | PORT can be 0, which case kawa picks an available port;
+ | the actual port is printed on the console.
+ | The server waits until you type a line at the console, and then exits.
+ |
+ | You can then browse the documentation using the URL http://127.0.0.1:PORT
+ |
+ | As an alternative, the script bin/browse-kawa-manual can be used to
+ | browse the same documentation, using the JavaFX WebView component.
+ | (The latter script does not start a web (http) server.)
+ |#
+
+(define local-path ((request-local-path):toString))
+(define response-type
+  (cond
+   ((local-path:endsWith ".css") 'text/css)
+   ((local-path:endsWith ".html") 'text/html)
+   ((local-path:endsWith ".png") 'image/png)
+   ((local-path:endsWith ".js") 'application/javascript)
+   (else 'application/xhtml+xml)))
+
+(if (string=? local-path "")
+    (set! local-path "index.html"))
+
+(values
+ (response-content-type response-type)
+ (try-catch
+  &<{jar:&(resource-url "kawa-manual.epub")!/OEBPS/&[local-path]}
+  (ex java.lang.Throwable
+      (error-response 404 (format #f "NOT FOUND ~w: ~w"
+                                  local-path ex:message)))))

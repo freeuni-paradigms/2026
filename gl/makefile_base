@@ -1,0 +1,18 @@
+ifndef CC
+CC=gcc
+endif
+ifndef LD
+LD=gcc
+endif
+ifndef CFLAGS
+CFLAGS=-Wall -std=gnu99
+endif
+CFLAGS+= -I$(GL_LIB_PATH)/../
+ifndef OUT_DIR
+OUT_DIR=.
+endif
+$(echo $(OUT_DIR))
+OUTDIR=$(realpath $(OUT_DIR))
+
+clean:
+	rm -rvf $(OUTDIR)/*.o $(OUTDIR)/*_test
