@@ -1,25 +1,24 @@
-#ifndef __definition__
-#define __definition__
+#ifndef _PARADIGMS_HW_RSG_DEFINITION_H_
+#define _PARADIGMS_HW_RSG_DEFINITION_H_
+
+#include "production.h"
+
+#include "random.h"
+
+#include <vector>
+
+using namespace std;
 
 /**
- * File: Definition
+ * Class: Definition
  * ----------------
  * Encapulates the data necessary to capture
  * the notion of a CFG Definition.  A Definition
  * is just a nonterminal paired with all of
  * it's possible expansions.
  */
-
-#include "production.h"
-#include <vector>
-using namespace std;
-
-class RandomGenerator;
-
 class Definition {
-
  public:
-
   /**
    * Default Constructor: Definition
    * -------------------------------
@@ -30,8 +29,7 @@ class Definition {
    * in a vector or some other STL container that
    * requires its elements to have a default constructor.
    */
-
-  Definition() {}
+  Definition();
 
   /**
    * ifstream Constructor: Definition
@@ -61,7 +59,6 @@ class Definition {
    *               the implementation makes no guarantees as to how the
    *               constructor behaves.
    */
-
   Definition(ifstream& infile);
 
   /**
@@ -74,7 +71,6 @@ class Definition {
    *         the nonterminal string (with the '<' and '>' on
    *         either side.
    */
-
   const string& getNonterminal() const { return nonterminal; }
 
   /**
@@ -88,7 +84,6 @@ class Definition {
    *         Production held by the Definition.  It is assumed
    *         that the Definition has at least one Production.
    */
-
   const Production& getRandomProduction(RandomGenerator& random) const;
 
  private:
@@ -96,4 +91,4 @@ class Definition {
   vector<Production> possibleExpansions;
 };
 
-#endif // ! __definition__
+#endif // _PARADIGMS_HW_RSG_DEFINITION_H_

@@ -1,33 +1,29 @@
+#ifndef _PARADIGMS_HW_RSG_PRODUCTION_H_
+#define _PARADIGMS_HW_RSG_PRODUCTION_H_
+
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <string>
+
+using namespace std;
+
 /**
- * File: production.h
+ * Class: production
  * ------------------
  * Defines the abstraction for the Production class,
  * which encapsulates the functionality needed to store
  * a contiguous list of strings.
  */
 
-#ifndef __production__
-#define __production__
-
-#include <vector>
-#include <fstream>
-#include <iostream>
-#include <string>
-using namespace std;
-
 class Production {
-
  public:
-
   /**
    * Provides STL-like iterator access to the sequence of items making up
    * a Production instance.
    */
-
   typedef vector<string>::iterator iterator;
   typedef vector<string>::const_iterator const_iterator;
-
- public:
 
   /**
    * Default Constructor: Production
@@ -43,8 +39,7 @@ class Production {
    * vector class requires its element type to
    * have a default constructor.
    */
-
-  Production() {}
+  Production();
 
   /**
    * ifstream Constructor: Production
@@ -56,7 +51,6 @@ class Production {
    * non-terminals are read in until a semicolon is consumed, and
    * the the rest of the data is discarded.
    */
-
   Production(ifstream& infile);
 
   /**
@@ -65,7 +59,6 @@ class Production {
    * Initializes a new Production to just encapsulate
    * a copy of the provided vector.
    */
-
   Production(const vector<string>& words) : phrases(words) {}
 
   /**
@@ -85,7 +78,6 @@ class Production {
    *    for (Production::iterator curr = prod.begin(); curr != prod.end(); ++curr) {
    *        // manipulate curr (psuedo-pointer to C++ strings) or *curr (direct string objects).
    */
-
   iterator begin() { return phrases.begin(); }
   const_iterator begin() const { return phrases.begin(); }
   iterator end() { return phrases.end(); }
@@ -95,4 +87,4 @@ class Production {
   vector<string> phrases;
 };
 
-#endif
+#endif  // _PARADIGMS_HW_RSG_PRODUCTION_H_

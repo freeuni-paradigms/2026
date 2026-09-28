@@ -8,7 +8,6 @@
  * ----------------------------
  * Initializes a random number generator with independently owned state.
  */
-
 RandomGenerator::RandomGenerator()
     : engine(std::random_device{}()) {}
 
@@ -23,9 +22,7 @@ RandomGenerator::RandomGenerator(std::mt19937::result_type seed)
  * on Eric Roberts' implementation from his
  * CS106A text.
  */
-
-int RandomGenerator::getRandomInteger(int low, int high)
-{
+int RandomGenerator::getRandomInteger(int low, int high) {
   assert(low <= high);
   const double percent =
       engine() / (static_cast<double>(engine.max()) + 1.0);

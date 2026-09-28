@@ -1,49 +1,35 @@
 # Random Sentence Generator
+თქვენი ამოცანაა იმპლემენტაცია გაუკეთოთ რანდომ ტექსტის დამაგენერირებელ `ExpandSymbol` ფუნქციას.
+ის არგუმენტებად იღებს:
+* `symbol` - საწყისი სიმბოლო რომლის გამოყენებითაც უნდა დაიწყოთ ტექსტის გენერირება.
+* `grammar` - გრამატიკის ამსახველი მეპი, რომლის გასაღებებიც აღნიშნავენ იმ შესაძლო სიმბოლოებს რომელთა გაშლაც შეიძლება დაგჭირდეთ ტექსტის გენერაციისას. ხოლო მნიშვნელობები აღნიშნავენ სიმბოლოს გაშლის შესაძლო ვარიანტებს.
+* `random` - რანდომ რიცხვის გენერატორი.
+* `output` - დაგენერირებული სიმბოლოები უნდა დაამატოთ `output` ვექტორში.
 
-Edit only `rsg.cc`. Implement this function:
+ტექსტის გენერირებას ყოველთვის იწყებთ `<start>` სიმბოლოთი და `ExpandSymbol` უნდა მუშაობდეს რეკურსიულად.
+ყოველ ჯერზე უნდა შეამოწმოთ მოცემული სიმბოლო გხვდებათ თუ არა გრამატიკის ამსახველ მეპში:
+* თუ არა, მაშინ მას უცლელად ამატებთ `output` ვექტორში.
+* თუ კი, მაშინ მისი გაშლის შესაძლო ვარიანტებიდან რანდომად უნდა აირჩიოთ ერთ-ერთი და მასში შემავალი სიმბოლოები რეკურსიულად დაამუშაოთ.
 
-```cpp
-void ExpandSymbol(const std::string& symbol,
-                  const Grammar& grammar,
-                  RandomGenerator& random,
-                  std::vector<std::string>& output);
-```
+## შეზღუდვები
+* უფლება გაქვთ შეცვალოთ მხოლოდ `rsg.cc` ფაილი.
+* შემთხვევითი რიცხვების დასაგენერირებლად აუცილებლად უნდა გამოიყენოთ გადმოცემული `random` ცვლადი.
 
-If `symbol` is not a key in `grammar`, append it to `output`. Otherwise, use
-`random` to select one production from the matching `Definition`, then
-recursively expand that production's tokens in order. Do not create another
-random-number generator.
-
-Input grammars are valid and finite for the supplied tests. Malformed input,
-undefined nonterminal references, cycles, and recursion limits are outside the
-assignment contract. Parsing, command-line handling, randomness, and output
-formatting are instructor-owned.
-
-## Build and run
-
-Set `GL_LIB_PATH` to the GL checkout, then build and run a grammar:
+## ტესტირება
+`data` დირექტორია შეიცავს 17 განსხვავებულ გრამატიკის ფაილს. მათი გამოყენებით შეგიძლიათ ხელით დააგენერიროთ რანდომ ტექსტები. მაგალითად თუ გსურთ გამოიყენოთ `bionic.g` გრამატიკის ფაილი:
 
 ```sh
-export GL_LIB_PATH=/absolute/path/to/gl
-make rsg
-./rsg data/bionic.g
+make rsg             # აკომპილირებს ტექსტის გენერატორ აპლიკაციას.
+./rsg data/bionic.g  # უკვე დაკომპილირებულ აპლიკაციას უშვებს data/bionic.g გრამატიკის ფაილზე.
 ```
 
-## Tests
+აპლიკაციის თავიდან დაკომპილირება აუცილებელია მხოლოდ მაშინ თუ იმპლემენტაციას შეცვლით, წინააღმდეგ შემთხვევაში შეგიძლიათ უკვე დაკომპილირებული `rsg` აპლიკაცია სხვადასხვა გრამატიკის ფაილების გამოყენებით გაუშვათ.
 
-Build and run the tests directly from the package root:
+დავალებას მოყვება `tests.cc` ფაილი, რომელიც თქვენს ნაშრომს ავტომატურად ტესტავს იგივე 17 გრამატიკის ფაილის გამოყენებით.
 
 ```sh
-make run_tests
-./run_tests --list_tests
-./run_tests
+make run_tests            # აკომპილირებს ავტომატურ ტესტერს.
+./run_tests --list_tests  # ეკრანზე დაბეჭდავს ყველა ტესტის სახელს.
+./run_tests               # ავტომატურად უშვებს ყველა ტესტს.
+./run_tests Bionic        # თქვენს ნაშომს გატესტავს მხოლოდ data/bionic.g ფაილზე.
 ```
-
-The same test source also supports the separate output directories used by the
-grading service.
-
-The grader has 17 equally weighted visible fixture tests. Each fixture compares
-exact token vectors from three fixed seeds. The grading service builds and runs
-both normal and AddressSanitizer variants. A functionally successful fixture
-with an AddressSanitizer failure loses 15% of that fixture's weight through
-LUnit's existing memory penalty.

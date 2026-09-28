@@ -1,25 +1,21 @@
-#ifndef __random__
-#define __random__
+#ifndef _PARADIGMS_HW_RSG_RANDOM_H_
+#define _PARADIGMS_HW_RSG_RANDOM_H_
 
 #include <random>
 
 /*
- * File: random.h
+ * Class: RandomGenerator
  * --------------
  * Provides a random number generator so
  * that pseudo-random numbers can be produced.
  */
-
 class RandomGenerator {
-
  public:
-
   /**
    * Constructor: RandomGenerator
    * ----------------------------
    * Constructs a new RandomGenerator object.
    */
-
   RandomGenerator();
   explicit RandomGenerator(std::mt19937::result_type seed);
 
@@ -36,11 +32,10 @@ class RandomGenerator {
    * @param the highest number we'd like to be considered as a return value.
    * @return some number drawn uniformly from the range [low, high].
    */
-
   int getRandomInteger(int low, int high);
 
  private:
   std::mt19937 engine;
 };
 
-#endif // ! __random__
+#endif  // _PARADIGMS_HW_RSG_RANDOM_H_

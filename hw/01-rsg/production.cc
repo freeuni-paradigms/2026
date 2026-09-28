@@ -1,13 +1,11 @@
-/**
- * File: production.cc
- * -------------------
- * Provides the implementation of the Production class, which
- * is simply a wrapper for the sequence of items (where items are terminals
- * or nonterminals).  It also completes the implementation of the ifstream
- * constructor, which was really the only thing missing from the .h
- */
-
 #include "production.h"
+
+/**
+ * Constructor: Production
+ * -----------------------
+ * Empty constructor.
+ */
+Production::Production() {}
 
 /**
  * Constructor Implementation: Production
@@ -26,16 +24,13 @@
  * You are more than welcome to update this implementation to do
  * something else if you'd like to.
  */
-
-Production::Production(ifstream& infile)  // phrases is constructed, size is 0
-{
+Production::Production(ifstream& infile)  {
   while (true) {
     string token;
     infile >> token;  // ignores whitespace by default
     if (token == ";") break;
     phrases.push_back(token);
   }
-
   string uselessText;
   getline(infile, uselessText); // read everything else as if it's important
   // oh, no it's not.. it's useless.. but we're glad it's been pulled from the stream..

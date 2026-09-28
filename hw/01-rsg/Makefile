@@ -35,7 +35,7 @@ rsg_lib: $(CORE_OBJECTS)
 rsg: rsg_lib $(OUTDIR)/main.o
 	$(CXX) $(LDFLAGS) $(OUTDIR)/main.o $(CORE_OBJECTS) -o $(OUTDIR)/$@
 
-$(OUTDIR)/tests.o: tests.c
+$(OUTDIR)/tests.o: tests.cc
 	$(CXX) $(CXXFLAGS) -x c++ -c $< -o $@
 
 run_tests: $(CORE_OBJECTS) $(OUTDIR)/tests.o
