@@ -1,0 +1,6 @@
+*.o
+*~
+six-degrees
+run_tests
+six-degrees-checker32
+six-degrees-checker64

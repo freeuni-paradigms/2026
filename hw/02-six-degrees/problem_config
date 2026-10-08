@@ -1,0 +1,15 @@
+make six_degrees_lib
+make run_tests
+./run_tests
+! timeout=60
++ Makefile
++ film.h
++ imdb.h
+- imdb.cc
++ path.h
++ path.cc
++ six-degrees.h
+- six-degrees.cc
++ tests.cc
++ data/little-endian/actordata
++ data/little-endian/moviedata
