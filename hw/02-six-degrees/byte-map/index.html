@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ka">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IMDb Binary Byte Map</title>
+  <link rel="stylesheet" href="byte-map.css">
+  <script src="byte-map-core.js" defer></script>
+  <script src="byte-map.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>IMDb ბინარული ფაილების ინტერაქტიული რუკა</h1>
+    <p class="intro">
+      შეცვალეთ სამი ფილმის YAML-like აღწერა, აირჩიეთ ბაიტების წარმოდგენა და
+      endianness, შემდეგ კი დააკვირდით, როგორ იგება <code>actordata</code> და
+      <code>moviedata</code>. ბაიტზე დაჭერა სრულ სეგმენტსა და შესაბამის ჩანაწერს
+      მეორე ფაილშიც მონიშნავს.
+    </p>
+
+    <div id="byte-map" class="byte-map-app">
+      <div class="toolbar">
+        <strong>IMDb binary byte map</strong>
+        <div class="controls">
+          <div class="control">
+            <span class="control-label">ბაიტების ფორმატი</span>
+            <span class="button-group radix-control" role="group" aria-label="ბაიტების ფორმატი">
+              <button type="button" data-value="binary">BIN</button>
+              <button type="button" data-value="hex">HEX</button>
+              <button type="button" data-value="decimal">DEC</button>
+            </span>
+          </div>
+          <div class="control">
+            <span class="control-label">ფაილის encoding</span>
+            <span class="button-group endian-control" role="group" aria-label="ფაილის encoding">
+              <button type="button" data-value="little">Little endian</button>
+              <button type="button" data-value="big">Big endian</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panes">
+        <section class="pane editor-pane">
+          <div class="pane-header"><h2>ფილმების აღწერა</h2><small>YAML-like</small></div>
+          <div class="editor-wrap">
+            <textarea spellcheck="false" aria-label="ფილმების YAML-like აღწერა"></textarea>
+            <div class="editor-actions">
+              <button class="reset" type="button">საწყისი მაგალითი</button>
+              <span class="status" role="status"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="pane">
+          <div class="pane-header"><h2>actordata</h2><small class="actor-size"></small></div>
+          <div class="legend">
+            <span><i class="swatch type-count"></i>რაოდენობა</span>
+            <span><i class="swatch type-table-offset"></i>offset table</span>
+            <span><i class="swatch type-string"></i>C-string</span>
+            <span><i class="swatch type-year"></i>წელი</span>
+            <span><i class="swatch type-padding"></i>padding</span>
+            <span><i class="swatch type-cross-offset"></i>cross-file offset</span>
+          </div>
+          <div class="map-scroller"><div class="actor-map"></div></div>
+          <div class="inspector actor-inspector"></div>
+        </section>
+
+        <section class="pane">
+          <div class="pane-header"><h2>moviedata</h2><small class="movie-size"></small></div>
+          <div class="legend">
+            <span><i class="swatch type-count"></i>რაოდენობა</span>
+            <span><i class="swatch type-table-offset"></i>offset table</span>
+            <span><i class="swatch type-string"></i>C-string</span>
+            <span><i class="swatch type-year"></i>წელი</span>
+            <span><i class="swatch type-padding"></i>padding</span>
+            <span><i class="swatch type-cross-offset"></i>cross-file offset</span>
+          </div>
+          <div class="map-scroller"><div class="movie-map"></div></div>
+          <div class="inspector movie-inspector"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

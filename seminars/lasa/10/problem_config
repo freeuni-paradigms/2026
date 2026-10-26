@@ -1,0 +1,6 @@
+make packed_vector
+make -C tests run_tests
+./run_tests
++ Makefile
++ tests/Makefile
++ tests/tests.c
