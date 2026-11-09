@@ -4,80 +4,81 @@ call main
 
 ########## YOUR CODE STARTS HERE ##########
 off_piste:
+#  int off_piste(Ski *ski) {
 #    if (ski->style == 0) {
 #        return -1;
 #    } else {
 #        return ski->boots[1] + *((char *)ski->bindings + 1);
 #    }
+#  }
 ########## implement off_piste here ##########
-    lw t0, 4(sp) # ski
-    lb t1, 14(t0) # ski->style
+    lw a0, 0(sp)           # ski
+    lb a1, 14(a0)          # ski->style
+    li a2, 0
+    beq a1, a2, ELSE
 
-    beq t1, zero, ELSE
-        lw t2, 4(t0) # ski->boots[1]
-        lw t3, 8(t0) # ski->bindings
-        lb t3, 1(t3) # *((char *)ski->bindings + 1)
-        add a0, t2, t3
-        j END
-    ELSE:
-        li a0, -1
-    END:
+    lw a1, 4(a0)           # ski->boots[1]
+    lw a2, 8(a0)           # ski->bindings
+    lb a2, 1(a2)           # *((char *)ski->bindings + 1)
+    add a0, a1, a2
+    ret
 
+ELSE:
+    li a0, -1
     ret
 
 start_skiing:
-# short start_skiing(Ski *skis, short people, Trail trail) 
+#  short start_skiing(Ski *skis, short people, Trail trail) {
 #    int result = 0;
 #    for (int i = 0; i < people; i++) {
 #        result += skis[i].radius + trail(skis + i);
 #    }
 #    return result;
+#  }
 ########## implement start_skiing here ##########
+    addi sp, sp, -12
+    sw ra, 8(sp)
+    li a0, 0
+    sw a0, 4(sp)           # result = 0
+    sw a0, 0(sp)           # i = 0
+
+    # Stack: 0=i, 4=result, 8=ra, 12=skis, 16=people, 18=trail
+LOOP_START:
+    lw a0, 0(sp)           # i
+    lh a1, 16(sp)          # people
+    bge a0, a1, END_LOOP
+
+    lw a1, 12(sp)          # skis
+    li a2, 15              # sizeof(Ski), without padding
+    mul a2, a2, a0         # i * sizeof(Ski)
+    add a1, a1, a2         # skis + i
+    lw a3, 18(sp)          # trail
+
     addi sp, sp, -4
-    sw zero, 0(sp)          # result = 0
+    sw a1, 0(sp)           # argument: skis + i
+    jalr a3
+    addi sp, sp, 4
 
-    # for loop
-    addi sp, sp, -4
-    sw zero, 0(sp)          # i = 0;
+    # Reload everything needed after the callback; a0 holds its result.
+    lw a1, 0(sp)           # i
+    lw a2, 12(sp)          # skis
+    li a3, 15
+    mul a3, a3, a1         # i * sizeof(Ski)
+    add a2, a2, a3         # skis + i
+    lh a2, 12(a2)          # skis[i].radius
+    add a0, a0, a2         # trail(skis + i) + skis[i].radius
+    lw a3, 4(sp)           # result
+    add a3, a3, a0
+    sw a3, 4(sp)
 
-    LOOP_START:
-    lw t0, 0(sp)            # i
-    lh t1, 16(sp)           # people (stack: 0=i, 4=result, 8=ra, 12=skis, 16=people, 18=trail)
-    bge t0, t1, END_LOOP    # i >= people -> end loop 
+    addi a1, a1, 1         # i++
+    sw a1, 0(sp)
+    j LOOP_START
 
-        lw t1, 12(sp)       # skis
-        li t2, 15           # sizeof(ski)
-        mul t2, t2, t0      # i * sizeof(ski)
-        add t1, t1, t2      # skis + i
-        lh s0, 12(t1)       # ski[i].radius (short = 2 bytes)
-        
-        lw t3, 18(sp)       # trail
-
-        # trail(ski + 1)
-        addi sp, sp, -8
-        sw ra, 0(sp)
-        sw t1, 4(sp)
-        jalr t3
-        lw ra, 0(sp)
-        addi sp, sp, 8
-
-        lw t3, 4(sp)        # result
-        add t2, s0, a0      # ski[1].radius += trail(ski + 1)
-        add t3, t3, t2      # result += ski[1].radius + trail(ski + 1)
-        sw t3, 4(sp)
-
-        # i++
-        lw t0, 0(sp)
-        addi t0, t0, 1
-        sw t0, 0(sp)
-        
-        j LOOP_START
-
-    END_LOOP:
-    addi sp, sp, 4          # remove i
-
-    lw a0, 0(sp)            # load result
-    addi sp, sp, 4          # remove result
+END_LOOP:
+    lh a0, 4(sp)           # return (short)result
+    lw ra, 8(sp)
+    addi sp, sp, 12
     ret
 
 ########## YOUR CODE ENDS   HERE ##########
@@ -91,10 +92,10 @@ call_off_piste:
         lw      a0,-20(s0)
 
         addi    sp,sp,-8
-        sw      ra,0(sp)
-        sw      a0,4(sp)
+        sw      ra,4(sp)
+        sw      a0,0(sp)
         call    off_piste
-        lw      ra,0(sp)
+        lw      ra,4(sp)
         addi    sp,sp,8
 
         mv      a5,a0
@@ -116,12 +117,12 @@ call_start_skiing:
         srai    a5,a5,16
 
         addi    sp,sp,-14
-        sw      ra,0(sp)
-        sw      a0,4(sp)
-        sh      a1,8(sp)
-        sw      a2,10(sp)
+        sw      ra,10(sp)
+        sw      a0,0(sp)
+        sh      a1,4(sp)
+        sw      a2,6(sp)
         call    start_skiing
-        lw      ra,0(sp)
+        lw      ra,10(sp)
         addi    sp,sp,14
 
         mv      a5,a0
@@ -131,7 +132,7 @@ call_start_skiing:
         addi    sp,sp,32
         jr      ra
 red_trail:
-        lw      t0,4(sp)
+        lw      t0,0(sp)
         lw      t1,0(t0)
         lw      t2,8(t0)
         lb      t2,0(t2)
@@ -238,6 +239,15 @@ ski_7:
         .word   bindings_7
         .half   100
         .byte   1
+bindings_8:
+        .byte   0
+        .byte   0
+ski_8:
+        .word   30000
+        .word   0
+        .word   bindings_8
+        .half   10000
+        .byte   1
 .LC0:
         .string "[OFF_PISTE TEST #1] result="
         .string ""
@@ -255,6 +265,9 @@ ski_7:
         .string ""
 .LC5:
         .string "[START_SKIING TEST #3] result="
+        .string ""
+.LC6:
+        .string "[START_SKIING TEST #4] result="
         .string ""
 .text
 main:   
@@ -422,6 +435,25 @@ main:
         addi    a5,a5,-163
         seqz    a5,a5
         andi    a5,a5,0xff
+        mv      a1,a5
+        li      a0,1
+        call    ecall
+        li      a1,10
+        li      a0,11
+        call    ecall
+        ##################### START_SKIING TEST 4
+        # 10000 + (30000 + 0) = 40000; (short)40000 = -25536.
+        # Compare the full return register to check truncation and sign extension.
+        la      a1,.LC6
+        li      a0,4
+        call    ecall
+        la      a0,ski_8
+        li      a1,1
+        la      a2,red_trail
+        call    call_start_skiing
+        li      a5,-25536
+        sub     a5,a0,a5
+        seqz    a5,a5
         mv      a1,a5
         li      a0,1
         call    ecall
